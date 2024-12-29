@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
             $table->string('title', 511);
+            $table->string('url', 511);
+            $table->float('score')->nullable();
             $table->timestamps();
         });
     }
