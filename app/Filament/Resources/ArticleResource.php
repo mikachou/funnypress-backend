@@ -35,6 +35,8 @@ class ArticleResource extends Resource
                 Tables\Columns\TextColumn::make('title')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('url'),
+                Tables\Columns\TextColumn::make('date')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('score')
                     ->sortable(),
             ])

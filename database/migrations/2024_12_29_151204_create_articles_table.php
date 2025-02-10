@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title', 511);
             $table->string('url', 511);
+            $table->dateTime('date');
             $table->float('score')->nullable();
             $table->timestamps();
         });
