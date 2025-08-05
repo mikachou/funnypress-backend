@@ -29,7 +29,7 @@ class UpdateArticleScores extends Command
     {
         $this->info("Starting to process articles in batches of 10...");
 
-        Article::whereNull('score')->chunk(10, function ($articles) {
+        Article::whereNull('score')->chunkById(10, function ($articles) {
             foreach ($articles as $article) {
                 $response = Http::post('http://funnypress-ws:8000/predict', [
                     'title' => $article->title
