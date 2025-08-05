@@ -32,10 +32,25 @@ class FetchFeedsArticles extends Command
                 foreach ($simplePie->get_items() as $item) {
                     $title = $item->get_title();
                     $url = $item->get_permalink();
-                    $date = $item->get_date('Y-m-d H:i:s');
+                    $date = $item->get_date('Y-m-d H:i:s') ?? date('Y-m-d H:i:s');
+
+                    $skip = false;
+                    if (empty($title)) {
+                        $this->info("Skipping empty title: " . $url);
+                        $skip = true;
+                    }
+
+                    if (empty($url)) {
+                        $this->info("Skipping empty URL: " . $title);
+                        $skip = true;
+                    }
 
                     if (Article::where('url', $url)->exists()) {
                         $this->info("Skipping duplicate article: " . $title);
+                        $skip = true;
+                    }
+
+                    if ($skip) {
                         continue;
                     }
 
