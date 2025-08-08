@@ -36,7 +36,9 @@ class ArticleResource extends Resource
                     ->searchable()
                     ->wrap(),
                 Tables\Columns\TextColumn::make('url')
-                    ->wrap(),
+                    ->wrap()
+                    ->url(fn (Article $record): string => $record->url)
+                    ->openUrlInNewTab(),
                 Tables\Columns\TextColumn::make('date')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('score')
