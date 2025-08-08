@@ -33,8 +33,10 @@ class ArticleResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('url'),
+                    ->searchable()
+                    ->wrap(),
+                Tables\Columns\TextColumn::make('url')
+                    ->wrap(),
                 Tables\Columns\TextColumn::make('date')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('score')
