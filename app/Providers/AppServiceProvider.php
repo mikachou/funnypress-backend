@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Filament\Tables\Table;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Model;
 
@@ -20,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //Model::unguard();
+        Table::configureUsing(function (Table $table) {
+            $table->paginated([10, 25, 50, 100]);
+        });
     }
 }
