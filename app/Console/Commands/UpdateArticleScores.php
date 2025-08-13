@@ -27,27 +27,33 @@ class UpdateArticleScores extends Command
      */
     public function handle()
     {
-        $this->info("Starting to process articles in batches of 10...");
+        $this->info(sprintf("Starting to process articles in batches of %d...", config('app.update_scores_batch_size')));
 
-        Article::whereNull('score')->chunkById(10, function ($articles) {
+        Article::whereNull('score')->chunkById(config('app.update_scores_batch_size'), function ($articles) {
+            $json = [];
             foreach ($articles as $article) {
-                $response = Http::post('http://funnypress-ws:8000/predict', [
-                    'title' => $article->title
-                ]);
+                $json[] = [
+                    'title' => $article->title,
+                    'id' => (string) $article->id,
+                ];
+            }
 
-                if ($response->successful()) {
-                    $data = $response->json();
-                    
-                    if (isset($data['score'])) {
-                        $article->score = $data['score'];
+            $response = Http::post('http://funnypress-ws:8000/predict_batch', $json);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                foreach ($data as $item) {
+                    $article = Article::find((int) $item['id']);
+                    if ($article) {
+                        $article->score = $item['score'];
                         $article->save();
-                        $this->info("Updated article ID {$article->id} with score: {$data['score']}");
+                        $this->info("Updated article ID {$article->id} with score: {$item['score']}");
                     } else {
-                        $this->error("Invalid response for article ID {$article->id}");
+                        $this->error("Invalid response for article ID {$item['id']}");
                     }
-                } else {
-                    $this->error("Failed to fetch score for article ID {$article->id}");
                 }
+            } else {
+                $this->error("Failed to fetch score for article ID {$article->id}");
             }
         });
 

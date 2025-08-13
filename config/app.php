@@ -123,4 +123,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'update_scores_batch_size' => env('APP_UPDATE_SCORES_BATCH_SIZE', 8),
+
 ];
