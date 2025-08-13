@@ -39,8 +39,8 @@ class FeedResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('url')
-                    ->searchable()
-                    ->sortable(),
+                    ->url(fn (Feed $record): string => $record->url)
+                    ->openUrlInNewTab(),
             ])
             ->filters([
                 //
