@@ -26,7 +26,10 @@ class FetchFeedsArticles extends Command
 
                 if ($simplePie->error()) {
                     $this->error("Error fetching feed: " . $simplePie->error());
+                    Feed::where('id', $feed->id)->update(['last_error_message' => $simplePie->error()]);
                     continue;
+                } else {
+                    Feed::where('id', $feed->id)->update(['last_error_message' => null]);
                 }
 
                 foreach ($simplePie->get_items() as $item) {

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 511)->nullable();
             $table->string('url', 511);
+            $table->string('last_error_message', 511)->nullable();
             $table->timestamps();
         });
     }

@@ -9,5 +9,5 @@ class Feed extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'url'];
+    protected $fillable = ['name', 'url', 'last_error_message'];
 }

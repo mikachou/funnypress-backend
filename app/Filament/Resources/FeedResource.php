@@ -37,10 +37,16 @@ class FeedResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->wrap(),
                 Tables\Columns\TextColumn::make('url')
                     ->url(fn (Feed $record): string => $record->url)
-                    ->openUrlInNewTab(),
+                    ->openUrlInNewTab()
+                    ->wrap(),
+                Tables\Columns\TextColumn::make('last_error_message')
+                    ->searchable()
+                    ->sortable()
+                    ->wrap(),
             ])
             ->filters([
                 //
