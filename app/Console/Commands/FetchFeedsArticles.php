@@ -14,7 +14,7 @@ class FetchFeedsArticles extends Command
 
     public function handle()
     {
-        Feed::chunk(10, function ($feeds) {
+        Feed::chunkById(10, function ($feeds) {
             foreach ($feeds as $feed) {
                 $this->info("Fetching feed: " . $feed->url);
 
@@ -43,8 +43,15 @@ class FetchFeedsArticles extends Command
                         $skip = true;
                     }
 
+                    $title = mb_substr($title, 0, 511, "UTF-8");
+
                     if (empty($url)) {
                         $this->info("Skipping empty URL: " . $title);
+                        $skip = true;
+                    }
+
+                    if (strlen($url) > 511) {
+                        $this->info("Skipping long URL: " . $title);
                         $skip = true;
                     }
 
