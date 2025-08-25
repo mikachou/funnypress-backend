@@ -37,6 +37,9 @@ class ArticleResource extends Resource
                     ->wrap(),
                 Tables\Columns\TextColumn::make('url')
                     ->wrap()
+                    ->extraAttributes([
+                        'style' => 'word-break: break-word;', # :/
+                    ])
                     ->url(fn (Article $record): string => $record->url)
                     ->openUrlInNewTab(),
                 Tables\Columns\TextColumn::make('date')
