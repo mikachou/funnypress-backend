@@ -128,7 +128,7 @@ return [
         ],
 
         'fetch' => [
-            'driver' => 'single',
+            'driver' => 'daily',
             'path' => storage_path('logs/fetch.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
