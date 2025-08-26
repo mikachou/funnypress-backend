@@ -66,7 +66,7 @@ sail up
 
 ### Run Database Migrations
 ```sh
-sail artisan migrate
+sail artisan migrate:fresh --seed
 ```
 
 ### Create an Application User
