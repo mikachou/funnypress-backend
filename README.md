@@ -80,9 +80,36 @@ sail artisan feeds:import resources/csv/feeds.csv
 ```
 
 ### Fetch Articles
+
+Article fetching is handled asynchronously through the Laravel queue system.
+
 ```sh
 sail artisan feeds:fetch
 ```
+#### 1. Start Queue Workers
+Before running the fetch command, queue workers must be started. For example, to start 8 workers:
+
+```sh
+for i in {1..8}; do sail artisan queue:work & done
+```
+
+Each worker will process queued jobs in the background. The number of workers can be adjusted depending on system resources and expected workload.
+
+#### 2. Run the Fetch Command
+
+Once the workers are running, execute the fetch command:
+
+```sh
+sail artisan feeds:fetch
+```
+
+This command will enqueue fetch operations into the database queue. The workers will then pick up and process these jobs.
+
+#### 3. Logs
+
+Logs for fetch operations are written to `storage/logs/fetch-YYYY-MM-DD.log`
+
+Use these log files to monitor progress and debug issues.
 
 ### Update Article Scores
 ```sh

@@ -2,10 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\FetchFeedArticlesJob;
 use Illuminate\Console\Command;
 use App\Models\Feed;
-use App\Models\Article;
-use SimplePie\SimplePie;
 
 class FetchFeedsArticles extends Command
 {
@@ -16,62 +15,7 @@ class FetchFeedsArticles extends Command
     {
         Feed::chunkById(10, function ($feeds) {
             foreach ($feeds as $feed) {
-                $this->info("Fetching feed: " . $feed->url);
-
-                $simplePie = new SimplePie();
-                $simplePie->set_feed_url($feed->url);
-                $simplePie->enable_cache(false);
-                $simplePie->init();
-                $simplePie->handle_content_type();
-
-                if ($simplePie->error()) {
-                    $this->error("Error fetching feed: " . $simplePie->error());
-                    Feed::where('id', $feed->id)->update(['last_error_message' => $simplePie->error()]);
-                    continue;
-                } else {
-                    Feed::where('id', $feed->id)->update(['last_error_message' => null]);
-                }
-
-                foreach ($simplePie->get_items() as $item) {
-                    $title = $item->get_title();
-                    $url = $item->get_permalink();
-                    $date = $item->get_date('Y-m-d H:i:s') ?? date('Y-m-d H:i:s');
-
-                    $skip = false;
-                    if (empty($title)) {
-                        $this->info("Skipping empty title: " . $url);
-                        $skip = true;
-                    }
-
-                    $title = mb_substr($title, 0, 511, "UTF-8");
-
-                    if (empty($url)) {
-                        $this->info("Skipping empty URL: " . $title);
-                        $skip = true;
-                    }
-
-                    if (strlen($url) > 511) {
-                        $this->info("Skipping long URL: " . $title);
-                        $skip = true;
-                    }
-
-                    if (Article::where('url', $url)->exists()) {
-                        $this->info("Skipping duplicate article: " . $title);
-                        $skip = true;
-                    }
-
-                    if ($skip) {
-                        continue;
-                    }
-
-                    Article::create([
-                        'title' => $title,
-                        'url' => $url,
-                        'date' => $date,
-                    ]);
-
-                    $this->line("- Saved: " . $title . " (" . $url . ") on " . $date);
-                }
+                FetchFeedArticlesJob::dispatch($feed);
             }
         });
     }
