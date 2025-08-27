@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/prod/Dockerfile
+    container_name: funnypress-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    networks:
+      - funnypress
+
+  web:
+    image: nginx:alpine
+    container_name: funnypress-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/prod/nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - funnypress
+    depends_on:
+      - app
+
+  db:
+    image: postgres:17
+    container_name: funnypress-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - funnypress-data:/var/lib/postgresql/data
+    networks:
+      - funnypress
+
+  funnypress-ws:
+    build:
+      context: https://github.com/mikachou/funnypress-webservice.git
+      dockerfile: Dockerfile.dev
+    container_name: funnypress-ws
+    restart: unless-stopped
+    networks:
+      - funnypress
+    ports:
+      - '8000:8000'
+
+networks:
+  funnypress:
+    driver: bridge
+
+volumes:
+  funnypress-data:
+    driver: local
