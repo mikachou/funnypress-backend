@@ -8,6 +8,8 @@ WORKDIR /var/www/html
 
 # Install system dependencies
 RUN apk add --no-cache \
+    icu-dev \
+    libzip-dev \
     curl \
     libpng-dev \
     libxml2-dev \
@@ -22,7 +24,11 @@ RUN docker-php-ext-install \
     exif \
     pcntl \
     bcmath \
-    gd
+    gd \
+    intl \
+    zip
+
+COPY . .
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -35,13 +41,15 @@ RUN composer install --no-dev --no-interaction --optimize-autoloader
 # Release stage
 FROM base AS release
 COPY --from=vendor /var/www/html/vendor/ ./vendor/
-COPY . .
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html
+RUN chown -R www-data:www-data storage bootstrap/cache
+RUN chmod -R 775 storage bootstrap/cache
 
 # Expose port
 EXPOSE 9000
 
 # Entrypoint
 CMD ["php-fpm"]
+
