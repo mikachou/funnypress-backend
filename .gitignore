@@ -23,6 +23,6 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-/docker/prod/certs/
+/docker/prod/certs/*
 !/docker/prod/certs/.gitkeep
 /docker/prod/private.env
