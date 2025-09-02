@@ -8,6 +8,8 @@ services:
     container_name: funnypress-app
     restart: unless-stopped
     working_dir: /var/www/html
+    env_file:
+      - .env.production
     networks:
       - funnypress
 
@@ -34,10 +36,8 @@ services:
     image: postgres:17
     container_name: funnypress-db
     restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${DB_DATABASE}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    env_file:
+      - .env.db.prod
     volumes:
       - funnypress-data:/var/lib/postgresql/data
     networks:
