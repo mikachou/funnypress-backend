@@ -28,28 +28,30 @@ RUN docker-php-ext-install \
     intl \
     zip
 
-COPY . .
-
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Vendor stage
 FROM base AS vendor
+WORKDIR /var/www/html
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-interaction --optimize-autoloader
+RUN composer install --no-dev --no-interaction --optimize-autoloader --no-scripts
 
 # Release stage
 FROM base AS release
-COPY --from=vendor /var/www/html/vendor/ ./vendor/
+WORKDIR /var/www/html
+COPY . .
+COPY --from=vendor /var/www/html/vendor /var/www/html/vendor
+
+RUN composer run-script post-autoload-dump || true
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www/html
-RUN chown -R www-data:www-data storage bootstrap/cache
-RUN chmod -R 775 storage bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
 
 # Expose port
 EXPOSE 9000
 
 # Entrypoint
 CMD ["php-fpm"]
-
