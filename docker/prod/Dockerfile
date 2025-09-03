@@ -1,5 +1,27 @@
 # syntax=docker/dockerfile:1
 
+# ============================
+# Stage 1: Node builder (for Vite / Mix)
+# ============================
+FROM node:20-alpine AS node_builder
+
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json vite.config.* ./
+RUN npm install
+
+# Copy source files
+COPY resources ./resources
+COPY public ./public
+
+# Build production assets
+RUN npm run build
+
+# ============================
+# Stage 2: PHP-FPM / Laravel app
+# ============================
+
 # Base image
 FROM php:8.4-fpm-alpine AS base
 
@@ -42,8 +64,23 @@ FROM base AS release
 WORKDIR /var/www/html
 COPY . .
 COPY --from=vendor /var/www/html/vendor /var/www/html/vendor
+COPY --from=node_builder /app/public/build ./public/build
+
+COPY .env.production .env
+COPY .env.db.prod .env.db
 
 RUN composer run-script post-autoload-dump || true
+
+# Run Filament asset publishing
+RUN php artisan filament:assets --ansi --no-interaction
+
+# Laravel optimizations
+RUN php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache \
+    && php artisan storage:link || true
+
+RUN rm -f .env .env.db
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
