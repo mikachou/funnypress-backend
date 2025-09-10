@@ -11,7 +11,7 @@ On Linux (Ubuntu 24.04), install the following software:
 - Docker and docker-compose
 - PHP, Composer, PHP-XML
 
-## Install
+## Install (dev)
 Follow these steps to install the application:
 
 ### Clone the Repository
@@ -116,7 +116,7 @@ Use these log files to monitor progress and debug issues.
 sail artisan articles:update-scores
 ```
 
-## Usage
+### Usage
 - Access the application in a browser at [http://localhost](http://localhost).
 - Access pgAdmin at [http://localhost:5050](http://localhost:5050) with:
   - **Login:** admin@admin.fr
@@ -128,3 +128,102 @@ sail artisan articles:update-scores
     - **Username:** sail
     - **Password:** password
 
+## Install (prod)
+
+### Clone the repository
+
+```sh
+git clone https://github.com/mikachou/funnypress-backend
+cd funnypress-backend
+```
+
+### Create .env file
+
+```sh
+cp .env.example .env.production
+```
+
+Edit `.env.production` and change `APP` and `DB` sections:
+
+```env
+APP_NAME=Funnypress
+APP_ENV=production
+APP_DEBUG=false
+APP_TIMEZONE=UTC
+APP_URL=<URL of the service>
+
+
+DB_CONNECTION=pgsql
+DB_HOST=db
+DB_PORT=5432
+DB_DATABASE=funnypress
+DB_USERNAME=funnypress
+DB_PASSWORD=<password for db>
+```
+
+```sh
+cp .env.db.prod.example .env.db.prod
+```
+
+Edit `.env.db.prod` and set the same values as in `.env.production` for the DB constants.
+
+### Generate APP_KEY
+
+Generate an `APP_KEY` locally and copy it to the `APP_KEY` parameter of the application.
+
+```sh
+php artisan key:generate --show
+```
+
+### Create certificates
+
+```sh
+openssl req -x509 -nodes -newkey rsa:4096 -keyout docker/prod/certs/selfsigned.key -out docker/prod/certs/selfsigned.crt -days 365
+```
+
+### Create private.env file
+
+Create the `private.env` file and modify its content (domain name of the site).
+
+```sh
+cp docker/prod/private.env.dist docker/prod/private.env
+```
+
+### Create containers
+
+```sh
+docker-compose -f docker-compose.prod.yml build --no-cache
+```
+
+### Launch docker-compose
+
+```sh
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### Restart everything
+
+To restart everything, shut down volumes and remove images:
+
+```sh
+docker compose -f docker-compose.prod.yml down -v
+docker compose -f docker-compose.prod.yml down --rmi all
+```
+
+### Initialize the database
+
+```sh
+docker compose exec app php artisan migrate:fresh --seed
+```
+
+### Create application user
+
+```sh
+docker compose exec app php artisan make:filament-user
+```
+
+### Import feeds
+
+```sh
+docker compose exec app php artisan feeds:import resources/csv/feeds.csv
+```
